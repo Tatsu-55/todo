@@ -1,5 +1,6 @@
 import {db} from '../Firebase';
 import {collection, addDoc, serverTimestamp} from 'firebase/firestore';
+import { useAuthContext } from '../context/AuthContext';
 //MUI
 import { Button, Container, Stack, TextField } from '@mui/material'
 import { useForm, Controller } from "react-hook-form";
@@ -11,6 +12,9 @@ import Typography from '@mui/material/Typography';
 //Todoを追加する
 export default function TodoForm() {
 
+const { user } = useAuthContext();
+console.log(user.uid);
+
  //useFormで必要な関数を取得し、デフォルト値を指定します。
 const { control, handleSubmit } = useForm({
     defaultValues: { text: "" },
@@ -21,7 +25,8 @@ const { control, handleSubmit } = useForm({
 const onSubmitAdd = async (data) => {
 
     await addDoc(collection(db, 'todos'), {
-        text: data.text,
+        userId: user.uid,
+        text: data.text.trim(),
         createdAt: serverTimestamp(),
     });
     console.log(data.text);
@@ -31,7 +36,13 @@ const onSubmitAdd = async (data) => {
 const validationRules = {
     text: {
         required: "入力してください",
-        minLength: { value: 1, message: "1文字以上入力してください" },
+        minLength: { value: 1,
+                     message: "1文字以上入力してください" 
+        },
+        pattern : { value: /\S/,
+                    message: "空白文字は使用できません"
+                },
+
     },
 };
 

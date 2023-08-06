@@ -1,4 +1,4 @@
-import { auth, provider } from '../Firebase';
+import { auth, provider, db } from '../Firebase';
 import { useNavigate } from 'react-router-dom';
 
 //MUI
@@ -16,18 +16,34 @@ import { css } from "@emotion/react";
 //MUI
 export default function Login() {
 
+
     const navigate = useNavigate();
     /*const [error, setError] = useState('');*/
     
     const handleLogin = async (event) => {
         try {
-            await auth.signInWithPopup(provider);
+          const result = await auth.signInWithPopup(provider);
             navigate('/');
+
+          if (result.user) {
+          createNewDocument(result.user.uid);
+          console.log(result.user.uid);            
+          }
         } catch (error) {
             console.log(error);
             console.log(error.message);
         }
     }
+
+    const createNewDocument = async (uid) => {
+      try {
+        await db.collection('todos').doc(uid).set({
+          text: '',
+        })
+      } catch (error) {
+        console.log(error);
+      }
+    }   
 
     //MUI---------
     const ButtonAppBar = () => {
